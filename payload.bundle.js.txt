@@ -1,0 +1,128 @@
+! function() {
+    let e = "",
+        t = 0,
+        n = {};
+    var o = chrome.runtime.connect({
+        name: "smoothwall_for_chrome"
+    });
+    chrome.runtime.sendMessage({
+            message: "getConfig"
+        }, (function(e) {
+            n = e
+        })),
+        function e() {
+            (o = chrome.runtime.connect({
+                name: "smoothwall_for_chrome"
+            }))
+            .onDisconnect.addListener(e), o.onMessage.addListener((e => {
+                console.log("received", e, "from bg")
+            }))
+        }();
+    var c, a, r = "all",
+        i = "info",
+        s = "performance",
+        u = "live",
+        d = "live";
+    function l(e) {
+        h("MouseLeftClick")
+    }
+    function m(n) {
+        n = n || window.event, c = n.target;
+        var o = "number" == typeof n.which ? n.which : n.keyCode;
+        e = e.slice(0, t) + String.fromCharCode(o) + e.slice(t), t++
+    }
+    function g(n) {
+        e || (t = 0, e = ""), c = n.target;
+        var o = !1;
+        switch (n.keyCode) {
+            case 9:
+                h("Tab");
+                break;
+            case 16:
+            case 17:
+            case 18:
+            default:
+                break;
+            case 8:
+                t--, o = !0;
+                break;
+            case 36:
+                t = 0;
+                break;
+            case 35:
+                t = e.length;
+                break;
+            case 37:
+                t--;
+                break;
+            case 39:
+                t++;
+                break;
+            case 46:
+                o = !0;
+                break;
+            case 13:
+                h("Return")
+        }
+        o && (e = e.slice(0, t) + e.slice(t + 1)), a && clearTimeout(a), a = setTimeout(f, 3e4)
+    }
+    function f() {
+        h("Timeout")
+    }
+    function h(a) {
+        if (p("logText Triggered:", a), "" !== e) {
+            var r = function() {
+                var t = e || "",
+                    n = c.value || "";
+                n.length >= t.length && n.length <= 100 && (t = n);
+                var o = (c.type || "")
+                    .toLowerCase();
+                if ("password" === o || "tel" === o) return "";
+                if (t.match(/^[(wsad ]+$/i)) return "";
+                if (document.title.match(/excel/i) && t.match(/^[0-9]+$/)) return "";
+                if (document.title.match(/password|log in|login|sign in|account login|register|account sign up|create account|account settings|secure checkout/i)) return "";
+                for (var a, r = /(?:[0-9][\s\-]*){12,}/g; null !== (a = r.exec(t));) t = t.substr(0, a.index) + "*".repeat(a[0].length) + t.substr(a.index + a[0].length);
+                return t
+            }();
+            if (e = "", t = 0, "" === r) return;
+            if (r.match(/^\s+$/)) return void p("Dropping white space-only capture.");
+            o.postMessage({
+                iFrame: window != window.top,
+                ev: "capture",
+                capturedText: r,
+                title: n.tabTitle || document.title,
+                trigger: a
+            })
+        }
+    }
+    function p(e, t) {
+        v(e, t, i)
+    }
+    function v(e, t, n) {
+        (d == r || d == s && n == s || d == i && (n == i || n == u) || d == u && n == u) && (t ? console.log(e, t) : console.log(e))
+    }
+    chrome.storage.local.get("debugMode", (function(e) {
+            d = e.debugMode
+        })), document.smoothwallCaptured || (document.smoothwallCaptured = !0, document.addEventListener("keypress", m, !0), document.addEventListener("keydown", g, !0), document.addEventListener("focusout", (function(e) {
+            h("FocusOut")
+        })), document.addEventListener("click", l)),
+        function() {
+            o.postMessage("Activated");
+            let e = document.getElementsByTagName("iframe");
+            if (o.postMessage({
+                    msg: "Bound iframes",
+                    frames: e
+                }), !(document.URL.indexOf("generated_background_page.html") > -1)) {
+                v("Payload loaded.", undefined, u);
+                for (let t = 0; t < e.length; t++)
+                    if (!e[t].smoothwallCaptured) {
+                        e[t].smoothwallCaptured = !0;
+                        try {
+                            e[t].contentDocument.addEventListener("keydown", g, !0), e[t].contentDocument.addEventListener("keypress", m, !0), e[t].contentDocument.addEventListener("click", l)
+                        } catch (n) {
+                            p("Iframe error: ", e[t])
+                        }
+                    }
+            }
+        }()
+}();

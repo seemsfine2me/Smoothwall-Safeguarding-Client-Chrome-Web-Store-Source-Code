@@ -1,0 +1,48 @@
+{
+    "update_url": "https://clients2.google.com/service/update2/crx",
+    "name": "Smoothwall Safeguarding Client (Global)",
+    "short_name": "Smoothwall Safeguarding",
+    "description": "Smoothwall empowers schools to digitally safeguard the students in their care with next-generation web filtering and monitoring.",
+    "version": "4.2.7.44749",
+    "manifest_version": 3,
+    "background": {
+        "service_worker": "main.bundle.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "all_frames": true,
+            "js": [
+                "payload.bundle.js"
+            ]
+        }
+    ],
+    "permissions": [
+        "storage",
+        "unlimitedStorage",
+        "tabs",
+        "identity",
+        "identity.email",
+        "alarms",
+        "background",
+        "enterprise.deviceAttributes",
+        "enterprise.networkingAttributes",
+        "scripting",
+        "webRequest"
+    ],
+    "host_permissions": [
+        "<all_urls>",
+        "http://*/",
+        "https://*/"
+    ],
+    "icons": {
+        "16": "Monitor16.png",
+        "24": "Monitor24.png",
+        "128": "Monitor128.png"
+    },
+    "storage": {
+        "managed_schema": "schema.json"
+    }
+}

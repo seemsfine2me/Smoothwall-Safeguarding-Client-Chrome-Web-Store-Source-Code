@@ -1,0 +1,51 @@
+param (
+ [string]$FILE_NAME
+)
+
+# Script taken from: sw-uc-browser-extension -> sw.clients.chromeos/deployment/webStoreDeployment.ps1
+
+#$env:CLIENT_ID = "1095314984413-m82n1rb332quutfln3o1ug58nptb85kq.apps.googleusercontent.com"
+#$env:CLIENT_SECRET = "AiwqxDWr5--MXY1a7t-e4gxV"
+#$env:REFRESH_TOKEN = "1//03uhkG4kOUdSJCgYIARAAGAMSNwF-L9IrIFc-z_71MWkyB8ipKcbdJmf13wIUbao2GP9sVV9J7VjJVCU3Dy58_wbbv5vQ7hUu-ts"
+#$env:APP_ID = "donajnaoohfnehhjfclbfgmpicmjbiek"
+
+# See: https://developer.chrome.com/docs/webstore/using_webstore_api/
+#
+# To generate a new refresh_token:
+# - Login as the user you want to grant it to (e.g mon.deploy)
+# - Amend URL client_id below and run:
+#    https://accounts.google.com/o/oauth2/auth?response_type=code&scope=https://www.googleapis.com/auth/chromewebstore&client_id=1095314984413-m82n1rb332quutfln3o1ug58nptb85kq.apps.googleusercontent.com&redirect_uri=urn:ietf:wg:oauth:2.0:oob
+#
+
+#$FILE_NAME = "C:\code\visigo-chrome\gen\VisigoChrome.0.8215.zip"
+
+Write-Output $FILE_NAME
+
+$body = @{
+    refresh_token = $env:REFRESH_TOKEN
+    client_id = $env:CLIENT_ID
+    client_secret = $env:CLIENT_SECRET
+    grant_type = "authorization_code"
+}
+
+Write-Output "Requesting new access token from Google...."
+$response = Invoke-RestMethod -Method Post -ContentType "application/x-www-form-urlencoded" -Body $body -Uri "https://accounts.google.com/o/oauth2/token"
+Write-Output "Request for new access token was successful"
+$token = $response.access_token
+
+$headers = @{}
+$headers.Add("Authorization", "Bearer $($token)")
+$headers.Add("x-goog-api-version", "2")
+
+Write-Output "Submitting new version of the extension to the store"
+$response = Invoke-RestMethod -Method Put -Headers $headers -InFile $FILE_NAME -Uri "https://www.googleapis.com/upload/chromewebstore/v1.1/items/$($env:APP_ID)"
+if($response.uploadState -ne "SUCCESS") {
+    throw "Submitting new version failed `n error code= $($response.itemError.error_code) `n error= $($response.itemError.error_detail) `n"
+    
+}
+Write-Output "Submission of new version successful. Item is in draft state in the Chrome Web Store"
+
+Write-Output "Attempting to publish new version to Chrome Web Store"
+$response = Invoke-RestMethod -Method Post -Headers $headers -Uri "https://www.googleapis.com/chromewebstore/v1.1/items/$($env:APP_ID)/publish"
+Write-Output $response
+Write-Output "Publish of new version successful"

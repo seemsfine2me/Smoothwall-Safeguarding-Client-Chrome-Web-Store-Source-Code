@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "properties": {
+        "Smoothwall": {
+            "type": "object",
+            "properties": {
+                "OrgID": {
+                    "title": "Organisation ID",
+                    "description": "Identification key provided by Smoothwall.",
+                    "type": "string"
+                },
+                "APIHostname": {
+                    "title": "API URL base",
+                    "description": "API URL base override provided by Smoothwall.",
+                    "type": "string"
+                },
+                "debugMode": {
+                    "title": "Debug mode",
+                    "description": "Extension console log level, e.g: live, all, info",
+                    "type": "string"
+                },
+                "serial": {
+                    "title": "serial",
+                    "description": "Serial provided by Smoothwall.",
+                    "type": "string"
+                }
+            }
+        },
+        "Visigo": {
+            "type": "object",
+            "properties": {
+                "OrgID": {
+                    "title": "Organisation ID",
+                    "description": "Identification key provided by Smoothwall.",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
